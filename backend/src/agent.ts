@@ -23,13 +23,14 @@ async function executeTool(userId: string, name: string, args: ToolArgs) {
 export async function respondToAgent(req: AuthenticatedRequest, res: Response) {
   const userId = req.auth?.sub; const message = req.body?.message;
   if (!userId || typeof message !== "string") return res.status(400).json({ error: "message_required" });
-  const apiKey = config.otariApiKey ?? config.openAiApiKey;
-  if (!apiKey) return res.status(503).json({ error: "llm_not_configured", hint: "Set OTARI_API_KEY or OPENAI_API_KEY" });
-  const client = new OpenAI({ apiKey, baseURL: config.otariBaseUrl });
+  const apiKey = config.otariApiKey ?? config.openRouterApiKey ?? config.openAiApiKey;
+  if (!apiKey) return res.status(503).json({ error: "llm_not_configured", hint: "Set OTARI_API_KEY, OPENROUTER_API_KEY, or OPENAI_API_KEY" });
+  const baseURL = config.otariBaseUrl ?? (config.openRouterApiKey ? config.openRouterBaseUrl : undefined);
+  const client = new OpenAI({ apiKey, baseURL });
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [{ role: "system", content: "You are an omnichannel coworker. Use tools for live research and Gmail drafts. Never claim an email was sent; sending requires a separate explicit confirmation endpoint." }, { role: "user", content: message }];
   try {
     for (let round = 0; round < 4; round++) {
-      const model = config.otariBaseUrl ? config.otariModel : "gpt-4o-mini";
+      const model = config.otariBaseUrl ? config.otariModel : config.openRouterApiKey ? config.openRouterModel : "gpt-4o-mini";
       const completion = await client.chat.completions.create({ model, messages, tools }); const choice = completion.choices[0]?.message;
       if (!choice) return res.status(502).json({ error: "empty_gateway_response" });
       if (!choice.tool_calls?.length) return res.json({ message: choice.content ?? "" });

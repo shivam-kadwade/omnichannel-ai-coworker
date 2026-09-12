@@ -15,4 +15,4 @@ Auth0 access tokens are verified against the tenant JWKS in the backend. Delegat
 
 ## Local demo without Auth0
 
-For a private localhost demo, set `LOCAL_DEMO_MODE=true` in `backend/.env` and `VITE_LOCAL_DEMO_MODE=true` in `extension/.env`. Do not expose this mode through a public URL: it accepts a fixed local demo identity. Set `OPENAI_API_KEY` to enable the sidebar's local-demo chat and microphone transcription. Run `npm run dev:backend` and `npm run dev:extension`, then load the generated `extension/dist` directory temporarily in Firefox.
+For a private localhost demo, set `LOCAL_DEMO_MODE=true` in `backend/.env` and `VITE_LOCAL_DEMO_MODE=true` in `extension/.env`. Do not expose this mode through a public URL: it accepts a fixed local demo identity. Set `OPENROUTER_API_KEY` (with `OPENROUTER_MODEL=openrouter/free` for a low-volume free demo) or `OPENAI_API_KEY` to enable sidebar chat. Microphone transcription specifically uses OpenAI Whisper and therefore requires `OPENAI_API_KEY`. Run `npm run dev:backend` and `npm run dev:extension`, then load the generated `extension/dist` directory temporarily in Firefox.

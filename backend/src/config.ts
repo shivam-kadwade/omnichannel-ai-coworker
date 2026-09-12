@@ -25,6 +25,9 @@ export const config = {
   otariBaseUrl: localDemoMode ? undefined : process.env.OTARI_BASE_URL,
   otariApiKey: localDemoMode ? undefined : process.env.OTARI_API_KEY,
   otariModel: process.env.OTARI_MODEL ?? "openrouter:openai/gpt-4o-mini",
+  openRouterApiKey: process.env.OPENROUTER_API_KEY,
+  openRouterBaseUrl: "https://openrouter.ai/api/v1",
+  openRouterModel: process.env.OPENROUTER_MODEL ?? "openrouter/free",
   exaApiKey: process.env.EXA_API_KEY,
   ambiguousApiKey: process.env.AMBIGUOUS_API_KEY,
   ambiguousBaseUrl: process.env.AMBIGUOUS_BASE_URL ?? "https://app.ambiguous.ai"
