@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "Omnichannel AI Coworker",
+  "version": "0.1.0",
+  "description": "Your context-aware AI coworker.",
+  "action": { "default_popup": "index.html" },
+  "permissions": ["identity", "storage"],
+  "host_permissions": ["https://*.auth0.com/*", "http://localhost:3001/*"]
+}

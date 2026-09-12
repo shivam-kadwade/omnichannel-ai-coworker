@@ -1,0 +1,13 @@
+{
+  "name": "omnichannel-ai-coworker",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["extension", "backend"],
+  "scripts": {
+    "dev:extension": "npm run dev --workspace @coworker/extension",
+    "dev:backend": "npm run dev --workspace @coworker/backend",
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces"
+  },
+  "engines": { "node": ">=20" }
+}
