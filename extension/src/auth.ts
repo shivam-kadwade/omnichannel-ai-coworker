@@ -6,6 +6,7 @@ if (!localDemoMode && (!domain || !clientId || !audience)) throw new Error("Miss
 
 type TokenResponse = { access_token: string; id_token?: string; expires_in: number };
 const tokenKey = "auth0Tokens";
+import { extensionApi } from "./extension-api";
 
 function encode(bytes: Uint8Array) {
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -19,7 +20,7 @@ function random() { return encode(crypto.getRandomValues(new Uint8Array(32))); }
 
 export async function getUser() {
   if (localDemoMode) return { email: "local-demo@coworker.test" };
-  const { [tokenKey]: tokens } = await browser.storage.local.get(tokenKey) as { [tokenKey]?: TokenResponse };
+  const { [tokenKey]: tokens } = await extensionApi.storage.local.get(tokenKey) as { [tokenKey]?: TokenResponse };
   if (!tokens?.id_token) return undefined;
   const payload = tokens.id_token.split(".")[1];
   return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(payload.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)))) as { email?: string };
@@ -27,13 +28,13 @@ export async function getUser() {
 
 export async function getAccessToken() {
   if (localDemoMode) return "local-demo-token";
-  const { [tokenKey]: tokens } = await browser.storage.local.get(tokenKey) as { [tokenKey]?: TokenResponse };
+  const { [tokenKey]: tokens } = await extensionApi.storage.local.get(tokenKey) as { [tokenKey]?: TokenResponse };
   return tokens?.access_token;
 }
 
 export async function login() {
   if (localDemoMode) return "local-demo-token";
-  const redirectUri = browser.identity.getRedirectURL();
+  const redirectUri = extensionApi.identity.getRedirectURL();
   const state = random();
   const verifier = random();
   const authorize = new URL(`https://${domain}/authorize`);
@@ -41,7 +42,7 @@ export async function login() {
     response_type: "code", client_id: clientId, redirect_uri: redirectUri, audience,
     scope: "openid profile email offline_access", state, code_challenge: await sha256(verifier), code_challenge_method: "S256"
   }).toString();
-  const callback = await browser.identity.launchWebAuthFlow({ url: authorize.toString(), interactive: true });
+  const callback = await extensionApi.identity.launchWebAuthFlow({ url: authorize.toString(), interactive: true });
   if (!callback) throw new Error("Authentication was cancelled");
   const params = new URL(callback).searchParams;
   if (params.get("state") !== state || !params.get("code")) throw new Error(params.get("error_description") ?? "Authentication failed");
@@ -51,6 +52,6 @@ export async function login() {
   });
   if (!response.ok) throw new Error("Auth0 token exchange failed");
   const tokens = await response.json() as TokenResponse;
-  await browser.storage.local.set({ [tokenKey]: tokens });
+  await extensionApi.storage.local.set({ [tokenKey]: tokens });
   return tokens.access_token;
 }

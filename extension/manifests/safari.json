@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Omnichannel AI Coworker",
+  "version": "0.1.0",
+  "description": "Your context-aware AI coworker.",
+  "action": { "default_popup": "sidebar.html", "default_title": "Open AI Coworker" },
+  "background": { "service_worker": "background.js", "type": "module" },
+  "content_scripts": [{ "matches": ["<all_urls>"], "js": ["content-script.js"], "run_at": "document_idle" }],
+  "permissions": ["identity", "storage", "tabs", "activeTab"],
+  "host_permissions": ["https://*.auth0.com/*", "http://localhost:3001/*", "ws://localhost:3001/*"]
+}

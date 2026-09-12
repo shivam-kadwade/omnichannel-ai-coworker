@@ -16,3 +16,12 @@ Auth0 access tokens are verified against the tenant JWKS in the backend. Delegat
 ## Local demo without Auth0
 
 For a private localhost demo, set `LOCAL_DEMO_MODE=true` in `backend/.env` and `VITE_LOCAL_DEMO_MODE=true` in `extension/.env`. Do not expose this mode through a public URL: it accepts a fixed local demo identity. Set `OPENROUTER_API_KEY` (with `OPENROUTER_MODEL=openrouter/free` for a low-volume free demo) or `OPENAI_API_KEY` to enable sidebar chat. Microphone transcription specifically uses OpenAI Whisper and therefore requires `OPENAI_API_KEY`. Run `npm run dev:backend` and `npm run dev:extension`, then load the generated `extension/dist` directory temporarily in Firefox.
+
+## Browser builds
+
+Build all browser packages with `npm run build:all --workspace @coworker/extension`. The output directories are `extension/dist/firefox`, `extension/dist/chrome`, `extension/dist/edge`, and `extension/dist/safari`.
+
+- Firefox: load `extension/dist/firefox/manifest.json` temporarily from `about:debugging`.
+- Chrome: load the unpacked `extension/dist/chrome` folder at `chrome://extensions` with Developer mode enabled.
+- Edge: load the unpacked `extension/dist/edge` folder at `edge://extensions` with Developer mode enabled.
+- Safari: package `extension/dist/safari` on macOS using `xcrun safari-web-extension-packager extension/dist/safari --project-location ./SafariCoworker --app-name "AI Coworker" --bundle-identifier "com.shivamkadwade.aicoworker"`, then open and run the generated Xcode project. Safari installs Web Extensions through its containing app rather than from a raw manifest.

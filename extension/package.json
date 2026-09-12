@@ -5,7 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run build:firefox",
+    "build:firefox": "tsc -b && BROWSER_TARGET=firefox vite build",
+    "build:chrome": "tsc -b && BROWSER_TARGET=chrome vite build",
+    "build:edge": "tsc -b && BROWSER_TARGET=edge vite build",
+    "build:safari": "tsc -b && BROWSER_TARGET=safari vite build",
+    "build:all": "npm run build:firefox && npm run build:chrome && npm run build:edge && npm run build:safari",
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {
