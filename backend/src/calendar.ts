@@ -1,8 +1,8 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import type { Request, Response } from "express";
 import { google } from "googleapis";
 import { config } from "./config.js";
-import { googleTokenStore } from "./auth.js";
+import { googleTokenStore, type AuthenticatedRequest } from "./auth.js";
 import { publish } from "./realtime.js";
 
 function signedUserId(userId: string) {
@@ -19,6 +19,20 @@ function verifySignedUserId(value: string | undefined) {
 }
 
 export function calendarWebhookTokenFor(userId: string) { return signedUserId(userId); }
+
+export async function startCalendarWatch(req: AuthenticatedRequest, res: Response) {
+  const userId = req.auth?.sub;
+  if (!userId) return res.status(401).json({ error: "missing_subject" });
+  const delegated = googleTokenStore.get(userId);
+  if (!delegated || !config.googleClientId || !config.googleClientSecret || !config.publicBaseUrl) return res.status(409).json({ error: "google_calendar_not_configured" });
+  const auth = new google.auth.OAuth2(config.googleClientId, config.googleClientSecret);
+  auth.setCredentials({ access_token: delegated.accessToken, refresh_token: delegated.refreshToken, expiry_date: delegated.expiresAt });
+  const channel = await google.calendar({ version: "v3", auth }).events.watch({
+    calendarId: "primary",
+    requestBody: { id: randomUUID(), type: "web_hook", address: `${config.publicBaseUrl.replace(/\/$/, "")}/v1/webhooks/google-calendar`, token: calendarWebhookTokenFor(userId) }
+  });
+  return res.status(201).json({ channelId: channel.data.id, resourceId: channel.data.resourceId, expiresAt: channel.data.expiration });
+}
 
 export async function receiveCalendarWebhook(req: Request, res: Response) {
   const userId = verifySignedUserId(req.header("x-goog-channel-token") ?? undefined);

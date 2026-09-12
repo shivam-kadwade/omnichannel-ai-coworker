@@ -16,5 +16,6 @@ export const config = {
   openAiApiKey: process.env.OPENAI_API_KEY,
   googleClientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
   googleClientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
-  googleCalendarWebhookToken: process.env.GOOGLE_CALENDAR_WEBHOOK_TOKEN
+  googleCalendarWebhookToken: process.env.GOOGLE_CALENDAR_WEBHOOK_TOKEN,
+  publicBaseUrl: process.env.PUBLIC_BASE_URL
 };
