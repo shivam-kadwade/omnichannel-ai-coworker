@@ -3,7 +3,11 @@
   "name": "Omnichannel AI Coworker",
   "version": "0.1.0",
   "description": "Your context-aware AI coworker.",
-  "action": { "default_popup": "index.html" },
-  "permissions": ["identity", "storage"],
-  "host_permissions": ["https://*.auth0.com/*", "http://localhost:3001/*"]
+  "action": { "default_popup": "index.html", "default_title": "Omnichannel AI Coworker" },
+  "background": { "scripts": ["background.js"], "persistent": false, "type": "module" },
+  "sidebar_action": { "default_title": "AI Coworker", "default_panel": "sidebar.html", "open_at_install": true },
+  "commands": { "_execute_sidebar_action": { "suggested_key": { "default": "Ctrl+Shift+Y" }, "description": "Open AI Coworker" } },
+  "content_scripts": [{ "matches": ["<all_urls>"], "js": ["content-script.js"], "run_at": "document_idle" }],
+  "permissions": ["identity", "storage", "tabs", "activeTab"],
+  "host_permissions": ["https://*.auth0.com/*", "http://localhost:3001/*", "ws://localhost:3001/*"]
 }
