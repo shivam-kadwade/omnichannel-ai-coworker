@@ -25,3 +25,7 @@ Build all browser packages with `npm run build:all --workspace @coworker/extensi
 - Chrome: load the unpacked `extension/dist/chrome` folder at `chrome://extensions` with Developer mode enabled.
 - Edge: load the unpacked `extension/dist/edge` folder at `edge://extensions` with Developer mode enabled.
 - Safari: package `extension/dist/safari` on macOS using `xcrun safari-web-extension-packager extension/dist/safari --project-location ./SafariCoworker --app-name "AI Coworker" --bundle-identifier "com.shivamkadwade.aicoworker"`, then open and run the generated Xcode project. Safari installs Web Extensions through its containing app rather than from a raw manifest.
+
+## Local debugger mode
+
+Use the bug icon in the sidebar to switch to Debug mode. Pick an element to inspect its selector and box model, preview reversible CSS overrides, and copy the exact CSS fix. The network capture is opt-in and records in-memory `fetch` results plus page warnings/errors for local heuristic RCA; it does not call an AI service or persist captured diagnostics.

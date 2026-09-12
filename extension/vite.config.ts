@@ -18,7 +18,7 @@ export default defineConfig({
     outDir: `dist/${target}`,
     emptyOutDir: true,
     rollupOptions: {
-      input: { popup: resolve(__dirname, "index.html"), sidebar: resolve(__dirname, "sidebar.html"), background: resolve(__dirname, "src/background.ts"), "content-script": resolve(__dirname, "src/content-script.ts") },
+      input: { popup: resolve(__dirname, "index.html"), sidebar: resolve(__dirname, "sidebar.html"), background: resolve(__dirname, "src/background.ts"), "content-script": resolve(__dirname, "src/content-script.ts"), "page-debugger": resolve(__dirname, "src/page-debugger.ts") },
       output: { entryFileNames: "[name].js", chunkFileNames: "assets/[name]-[hash].js", assetFileNames: "assets/[name]-[hash][extname]" }
     }
   }

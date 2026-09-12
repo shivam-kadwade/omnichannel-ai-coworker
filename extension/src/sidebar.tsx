@@ -6,10 +6,11 @@ import { createRoot } from "react-dom/client";
 import { AudioStream, type StreamStatus } from "./audio-stream";
 import { getAccessToken } from "./auth";
 import { extensionApi } from "./extension-api";
+import { DebugPanel } from "./debug-panel";
 import "./sidebar.css";
 
 type PageContext = { url: string; title: string; text: string; capturedAt: string };
-type IconName = "capture" | "send" | "mic" | "sun" | "moon" | "sparkle";
+type IconName = "capture" | "send" | "mic" | "sun" | "moon" | "sparkle" | "bug";
 const localDemoMode = import.meta.env.VITE_LOCAL_DEMO_MODE === "true";
 
 function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
@@ -19,7 +20,8 @@ function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
     mic: <><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" /></>,
     sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></>,
     moon: <path d="M20.7 15.3A8.5 8.5 0 0 1 8.7 3.3 8.5 8.5 0 1 0 20.7 15.3Z" />,
-    sparkle: <path d="m12 2 1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2Zm7 12 .7 2.3L22 17l-2.3.7L19 20l-.7-2.3L16 17l2.3-.7L19 14Z" />
+    sparkle: <path d="m12 2 1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2Zm7 12 .7 2.3L22 17l-2.3.7L19 20l-.7-2.3L16 17l2.3-.7L19 14Z" />,
+    bug: <><path d="M9 9h6v9H9zM12 5v4M8 7 6 5M16 7l2-2M8 12H5M19 12h-3M8 17l-2 2M16 17l2 2" /><path d="M9 9a3 3 0 0 1 6 0" /></>
   };
   return <svg aria-hidden="true" className="icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
 }
@@ -44,14 +46,14 @@ function LocalDemoChat() {
 }
 
 function CoworkerSidebar() {
-  const [context, setContext] = useState<PageContext>(); const [audioStatus, setAudioStatus] = useState<StreamStatus>("idle"); const [error, setError] = useState<string>(); const [theme, setTheme] = useState<"light" | "dark">("light"); const audio = useRef(new AudioStream());
+  const [context, setContext] = useState<PageContext>(); const [audioStatus, setAudioStatus] = useState<StreamStatus>("idle"); const [error, setError] = useState<string>(); const [theme, setTheme] = useState<"light" | "dark">("light"); const [debugMode, setDebugMode] = useState(false); const audio = useRef(new AudioStream());
   useEffect(() => { extensionApi.storage.local.get("sidebarTheme").then(({ sidebarTheme }) => { if (sidebarTheme === "light" || sidebarTheme === "dark") setTheme(sidebarTheme); }); }, []);
   const toggleTheme = () => setTheme(current => { const next = current === "light" ? "dark" : "light"; extensionApi.storage.local.set({ sidebarTheme: next }); return next; });
   useCopilotReadable({ description: "The active browser page the user is viewing", value: context ?? { status: "No page context captured yet" } });
   const refreshContext = useCallback(async () => { setError(undefined); const [tab] = await extensionApi.tabs.query({ active: true, currentWindow: true }); if (!tab?.id) throw new Error("No active tab available"); try { setContext(await extensionApi.tabs.sendMessage(tab.id, { type: "GET_PAGE_CONTEXT" }) as PageContext); } catch { setError("This page does not allow context capture."); } }, []);
   const toggleRecording = useCallback(async () => { if (audioStatus === "recording") { audio.current.stop(); setAudioStatus("idle"); return; } try { setAudioStatus("connecting"); await audio.current.start(import.meta.env.VITE_WS_URL, await getAccessToken()); setAudioStatus("recording"); } catch (cause) { setError(cause instanceof Error ? cause.message : "Microphone could not start"); setAudioStatus("error"); } }, [audioStatus]);
   const isRecording = audioStatus === "recording";
-  return <main className={`coworker-sidebar theme-${theme}`}><header className="app-header"><div className="brand"><span className="brand-mark"><Icon name="sparkle" size={17} /></span><div><strong>AI Coworker</strong><span className="status"><i />Ready to help</span></div></div><div className="header-actions"><button className="icon-button" onClick={toggleTheme} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`} title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}><Icon name={theme === "light" ? "moon" : "sun"} /></button><button className="capture-button" onClick={refreshContext}><Icon name="capture" size={16} /><span>Capture</span></button></div></header><section className="context-card"><div className="context-copy"><span>Active context</span><strong title={context?.title}>{context?.title ?? "No page captured"}</strong></div><button className="text-button" onClick={refreshContext}>Refresh</button></section>{error && <p className="error" role="alert">{error}</p>}<div className="conversation">{localDemoMode ? <LocalDemoChat /> : <CopilotChat labels={{ title: "Ask about this page", initial: "I can use the current page as context once you capture it." }} />}</div><footer className="voice-bar"><button className={`voice-button ${isRecording ? "recording" : ""}`} onClick={toggleRecording} disabled={audioStatus === "connecting"}><span className="voice-icon"><Icon name="mic" size={19} /></span><span>{isRecording ? "Stop listening" : audioStatus === "connecting" ? "Connecting…" : "Talk to coworker"}</span>{isRecording && <i className="recording-dot" />}</button></footer></main>;
+  return <main className={`coworker-sidebar theme-${theme}`}><header className="app-header"><div className="brand"><span className="brand-mark"><Icon name="sparkle" size={17} /></span><div><strong>AI Coworker</strong><span className="status"><i />{debugMode ? "Debug mode active" : "Ready to help"}</span></div></div><div className="header-actions"><button className={`icon-button ${debugMode ? "active" : ""}`} onClick={() => setDebugMode(current => !current)} aria-label="Toggle debugger mode" title="Toggle debugger mode"><Icon name="bug" /></button><button className="icon-button" onClick={toggleTheme} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`} title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}><Icon name={theme === "light" ? "moon" : "sun"} /></button><button className="capture-button" onClick={refreshContext}><Icon name="capture" size={16} /><span>Capture</span></button></div></header><section className="context-card"><div className="context-copy"><span>Active context</span><strong title={context?.title}>{context?.title ?? "No page captured"}</strong></div><button className="text-button" onClick={refreshContext}>Refresh</button></section>{error && <p className="error" role="alert">{error}</p>}<div className="conversation">{debugMode ? <DebugPanel /> : localDemoMode ? <LocalDemoChat /> : <CopilotChat labels={{ title: "Ask about this page", initial: "I can use the current page as context once you capture it." }} />}</div><footer className="voice-bar"><button className={`voice-button ${isRecording ? "recording" : ""}`} onClick={toggleRecording} disabled={audioStatus === "connecting"}><span className="voice-icon"><Icon name="mic" size={19} /></span><span>{isRecording ? "Stop listening" : audioStatus === "connecting" ? "Connecting…" : "Talk to coworker"}</span>{isRecording && <i className="recording-dot" />}</button></footer></main>;
 }
 
 createRoot(document.getElementById("root")!).render(<CopilotKit runtimeUrl={import.meta.env.VITE_COPILOT_RUNTIME_URL}><CoworkerSidebar /></CopilotKit>);
