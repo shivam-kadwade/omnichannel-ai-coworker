@@ -27,15 +27,20 @@ export async function respondToAgent(req: AuthenticatedRequest, res: Response) {
   if (!apiKey) return res.status(503).json({ error: "llm_not_configured", hint: "Set OTARI_API_KEY or OPENAI_API_KEY" });
   const client = new OpenAI({ apiKey, baseURL: config.otariBaseUrl });
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [{ role: "system", content: "You are an omnichannel coworker. Use tools for live research and Gmail drafts. Never claim an email was sent; sending requires a separate explicit confirmation endpoint." }, { role: "user", content: message }];
-  for (let round = 0; round < 4; round++) {
-    const model = config.otariBaseUrl ? config.otariModel : "gpt-4o-mini";
-    const completion = await client.chat.completions.create({ model, messages, tools }); const choice = completion.choices[0]?.message;
-    if (!choice) return res.status(502).json({ error: "empty_gateway_response" });
-    if (!choice.tool_calls?.length) return res.json({ message: choice.content ?? "" });
-    messages.push(choice);
-    for (const call of choice.tool_calls) { const output = await executeTool(userId, call.function.name, JSON.parse(call.function.arguments) as ToolArgs); messages.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(output) }); }
+  try {
+    for (let round = 0; round < 4; round++) {
+      const model = config.otariBaseUrl ? config.otariModel : "gpt-4o-mini";
+      const completion = await client.chat.completions.create({ model, messages, tools }); const choice = completion.choices[0]?.message;
+      if (!choice) return res.status(502).json({ error: "empty_gateway_response" });
+      if (!choice.tool_calls?.length) return res.json({ message: choice.content ?? "" });
+      messages.push(choice);
+      for (const call of choice.tool_calls) { const output = await executeTool(userId, call.function.name, JSON.parse(call.function.arguments) as ToolArgs); messages.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(output) }); }
+    }
+    return res.status(502).json({ error: "agent_tool_loop_limit" });
+  } catch (cause) {
+    console.error("Agent request failed", cause);
+    return res.status(502).json({ error: "agent_request_failed", hint: "Verify OPENAI_API_KEY and network access, then retry." });
   }
-  return res.status(502).json({ error: "agent_tool_loop_limit" });
 }
 
 export async function confirmFollowUpSend(req: AuthenticatedRequest, res: Response) {
