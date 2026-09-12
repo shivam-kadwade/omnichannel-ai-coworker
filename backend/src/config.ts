@@ -28,6 +28,8 @@ export const config = {
   openRouterApiKey: process.env.OPENROUTER_API_KEY,
   openRouterBaseUrl: "https://openrouter.ai/api/v1",
   openRouterModel: process.env.OPENROUTER_MODEL ?? "openrouter/free",
+  localLlmBaseUrl: process.env.LOCAL_LLM_BASE_URL,
+  localLlmModel: process.env.LOCAL_LLM_MODEL,
   exaApiKey: process.env.EXA_API_KEY,
   ambiguousApiKey: process.env.AMBIGUOUS_API_KEY,
   ambiguousBaseUrl: process.env.AMBIGUOUS_BASE_URL ?? "https://app.ambiguous.ai"
