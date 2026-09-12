@@ -1,4 +1,4 @@
-# Omnichannel AI Coworker
+# Doppel: Omnichannel AI Coworker
 
 Firefox extension and Node.js orchestration backend for the AI Tinkerers hackathon.
 
