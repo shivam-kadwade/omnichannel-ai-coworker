@@ -7,16 +7,16 @@ export type AuthenticatedRequest = Request & { auth?: JWTPayload };
 
 const jwks = createRemoteJWKSet(new URL(`https://${config.auth0Domain}/.well-known/jwks.json`));
 
+export async function verifyAccessToken(token: string) {
+  const { payload } = await jwtVerify(token, jwks, { issuer: config.auth0Issuer, audience: config.auth0Audience });
+  return payload;
+}
+
 export async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const token = req.header("authorization")?.match(/^Bearer (.+)$/i)?.[1];
   if (!token) return res.status(401).json({ error: "missing_bearer_token" });
-
   try {
-    const { payload } = await jwtVerify(token, jwks, {
-      issuer: config.auth0Issuer,
-      audience: config.auth0Audience
-    });
-    req.auth = payload;
+    req.auth = await verifyAccessToken(token);
     next();
   } catch {
     return res.status(401).json({ error: "invalid_access_token" });
