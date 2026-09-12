@@ -4,6 +4,7 @@ import { config } from "./config.js";
 import { googleTokenStore, requireAuth, type AuthenticatedRequest, type GoogleDelegation } from "./auth.js";
 import { receiveCalendarWebhook, startCalendarWatch } from "./calendar.js";
 import { createRealtimeServer } from "./realtime.js";
+import { confirmFollowUpSend, respondToAgent } from "./agent.js";
 
 const app = express();
 app.use(cors({ origin: config.extensionOrigin ?? false }));
@@ -28,5 +29,7 @@ app.delete("/v1/integrations/google", requireAuth, (req: AuthenticatedRequest, r
 });
 app.post("/v1/webhooks/google-calendar", receiveCalendarWebhook);
 app.post("/v1/integrations/google/calendar/watch", requireAuth, startCalendarWatch);
+app.post("/v1/agent/respond", requireAuth, respondToAgent);
+app.post("/v1/agent/confirm-send", requireAuth, confirmFollowUpSend);
 
 createRealtimeServer(app).listen(config.port, () => console.log(`Backend listening on :${config.port}`));

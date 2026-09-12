@@ -17,5 +17,11 @@ export const config = {
   googleClientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
   googleClientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
   googleCalendarWebhookToken: process.env.GOOGLE_CALENDAR_WEBHOOK_TOKEN,
-  publicBaseUrl: process.env.PUBLIC_BASE_URL
+  publicBaseUrl: process.env.PUBLIC_BASE_URL,
+  otariBaseUrl: process.env.OTARI_BASE_URL,
+  otariApiKey: process.env.OTARI_API_KEY,
+  otariModel: process.env.OTARI_MODEL ?? "openrouter:openai/gpt-4o-mini",
+  exaApiKey: process.env.EXA_API_KEY,
+  ambiguousApiKey: process.env.AMBIGUOUS_API_KEY,
+  ambiguousBaseUrl: process.env.AMBIGUOUS_BASE_URL ?? "https://app.ambiguous.ai"
 };
