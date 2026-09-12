@@ -5,14 +5,18 @@ import { config } from "./config.js";
 
 export type AuthenticatedRequest = Request & { auth?: JWTPayload };
 
-const jwks = createRemoteJWKSet(new URL(`https://${config.auth0Domain}/.well-known/jwks.json`));
+const jwks = config.auth0Domain ? createRemoteJWKSet(new URL(`https://${config.auth0Domain}/.well-known/jwks.json`)) : undefined;
+const demoClaims: JWTPayload = { sub: "local-demo-user", email: "local-demo@coworker.test" };
 
 export async function verifyAccessToken(token: string) {
+  if (config.localDemoMode && token === "local-demo-token") return demoClaims;
+  if (!jwks || !config.auth0Issuer || !config.auth0Audience) throw new Error("Authentication is not configured");
   const { payload } = await jwtVerify(token, jwks, { issuer: config.auth0Issuer, audience: config.auth0Audience });
   return payload;
 }
 
 export async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  if (config.localDemoMode) { req.auth = demoClaims; return next(); }
   const token = req.header("authorization")?.match(/^Bearer (.+)$/i)?.[1];
   if (!token) return res.status(401).json({ error: "missing_bearer_token" });
   try {

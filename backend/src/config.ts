@@ -6,12 +6,16 @@ function required(name: string): string {
   return value;
 }
 
+const localDemoMode = process.env.LOCAL_DEMO_MODE === "true";
+const demoTokenEncryptionKey = "0000000000000000000000000000000000000000000000000000000000000000";
+
 export const config = {
   port: Number(process.env.PORT ?? 3001),
-  auth0Domain: required("AUTH0_DOMAIN"),
-  auth0Audience: required("AUTH0_AUDIENCE"),
-  auth0Issuer: required("AUTH0_ISSUER_BASE_URL"),
-  tokenEncryptionKey: required("TOKEN_ENCRYPTION_KEY"),
+  localDemoMode,
+  auth0Domain: localDemoMode ? undefined : required("AUTH0_DOMAIN"),
+  auth0Audience: localDemoMode ? undefined : required("AUTH0_AUDIENCE"),
+  auth0Issuer: localDemoMode ? undefined : required("AUTH0_ISSUER_BASE_URL"),
+  tokenEncryptionKey: process.env.TOKEN_ENCRYPTION_KEY ?? (localDemoMode ? demoTokenEncryptionKey : required("TOKEN_ENCRYPTION_KEY")),
   extensionOrigin: process.env.EXTENSION_ORIGIN,
   openAiApiKey: process.env.OPENAI_API_KEY,
   googleClientId: process.env.GOOGLE_OAUTH_CLIENT_ID,

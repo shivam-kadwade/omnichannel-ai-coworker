@@ -1,7 +1,8 @@
 const domain = import.meta.env.VITE_AUTH0_DOMAIN;
 const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
 const audience = import.meta.env.VITE_AUTH0_AUDIENCE;
-if (!domain || !clientId || !audience) throw new Error("Missing Auth0 extension environment variables");
+const localDemoMode = import.meta.env.VITE_LOCAL_DEMO_MODE === "true";
+if (!localDemoMode && (!domain || !clientId || !audience)) throw new Error("Missing Auth0 extension environment variables");
 
 type TokenResponse = { access_token: string; id_token?: string; expires_in: number };
 const tokenKey = "auth0Tokens";
@@ -17,6 +18,7 @@ async function sha256(value: string) {
 function random() { return encode(crypto.getRandomValues(new Uint8Array(32))); }
 
 export async function getUser() {
+  if (localDemoMode) return { email: "local-demo@coworker.test" };
   const { [tokenKey]: tokens } = await browser.storage.local.get(tokenKey) as { [tokenKey]?: TokenResponse };
   if (!tokens?.id_token) return undefined;
   const payload = tokens.id_token.split(".")[1];
@@ -24,11 +26,13 @@ export async function getUser() {
 }
 
 export async function getAccessToken() {
+  if (localDemoMode) return "local-demo-token";
   const { [tokenKey]: tokens } = await browser.storage.local.get(tokenKey) as { [tokenKey]?: TokenResponse };
   return tokens?.access_token;
 }
 
 export async function login() {
+  if (localDemoMode) return "local-demo-token";
   const redirectUri = browser.identity.getRedirectURL();
   const state = random();
   const verifier = random();
